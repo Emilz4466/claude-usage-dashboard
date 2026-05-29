@@ -46,26 +46,35 @@ Otwórz **http://localhost:4000**. (Port zmienisz przez `PORT=5000 ./start.sh`.)
 
 ## Uruchomienie bez klonowania (npx)
 
-Jeśli repo jest na Git (np. GitHub), uruchomisz je bez ręcznego klonowania.
-Zbudowany frontend (`dist/`) jest **dołączony do repo**, więc `npx` tylko pobiera
-kod i od razu startuje serwer — bez budowania, szybko i niezawodnie (działa też
-przy wyłączonych skryptach npm):
+Aplikacja jest opublikowana na npm — uruchomisz ją bez klonowania:
 
 ```bash
-npx github:Emilz4466/claude-usage-dashboard
+npx claude-code-usage-dashboard
 ```
 
-Pierwsze uruchomienie pobiera zależności (kilka–kilkanaście sekund) — poczekaj, aż
-w terminalu pojawi się linia `Dashboard: http://localhost:4000`, i dopiero wtedy
-otwórz przeglądarkę.
+Pierwsze uruchomienie pobiera zależności (kilka sekund) — poczekaj, aż w terminalu
+pojawi się linia `Dashboard: http://localhost:4000`, i dopiero wtedy otwórz
+przeglądarkę. Zbudowany frontend (`dist/`) jest dołączony do paczki, więc nic się
+nie buduje przy instalacji (szybko i niezawodnie).
+
+> **Nie używaj `npx github:…`** — na npm 9.x z Debiana/Ubuntu ta ścieżka jest
+> popsuta (bug npm w obsłudze zależności git: „could not determine executable to
+> run"). Dlatego dystrybucja idzie przez rejestr npm.
 
 Kalibracja i wykluczenia zapisują się w `~/.claude-usage-dashboard.json`, więc
 przeżywają kolejne uruchomienia (także przez `npx`, który działa w katalogu
 tymczasowym). Logi czytane są z `~/.claude` na **tej** maszynie — aplikacja musi
 działać lokalnie, na koncie którego zużycie chcesz widzieć.
 
-> Uwaga dla rozwoju: skoro `dist/` jest commitowany, po zmianach frontendu zrób
-> `npm run build` i zacommituj `dist/`, inaczej użytkownicy `npx` dostaną stary UI.
+### Publikacja nowej wersji (dla utrzymującego)
+
+```bash
+npm version patch        # podbij wersję
+npm publish              # prepublishOnly samo zbuduje świeży dist/
+```
+
+> Po zmianach frontendu pamiętaj o `npm run build` i commicie `dist/` (jest w repo),
+> żeby uruchomienia z gita/lokalne też miały aktualny UI.
 
 ## Tryb developerski (hot reload)
 

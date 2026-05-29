@@ -1,13 +1,32 @@
 {
-  "name": "claude-usage-dashboard",
-  "private": true,
+  "name": "claude-code-usage-dashboard",
   "version": "1.0.0",
+  "description": "Local dashboard for Claude Code token usage — reads ~/.claude logs, shows cost-weighted 5h/7d usage with calibration, plus per-project and per-session breakdowns. Runs fully locally.",
+  "license": "MIT",
+  "author": "Emil Zyberski",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Emilz4466/claude-usage-dashboard.git"
+  },
+  "homepage": "https://github.com/Emilz4466/claude-usage-dashboard#readme",
+  "bugs": {
+    "url": "https://github.com/Emilz4466/claude-usage-dashboard/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "anthropic",
+    "tokens",
+    "usage",
+    "dashboard",
+    "monitor"
+  ],
   "type": "module",
   "engines": {
     "node": ">=18"
   },
   "bin": {
-    "claude-usage-dashboard": "server.js"
+    "claude-code-usage-dashboard": "server.js"
   },
   "files": [
     "server.js",
@@ -19,15 +38,16 @@
     "build": "vite build",
     "serve": "npm run build && npm start",
     "start": "node server.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "recharts": "^2.12.7"
+    "express": "^4.19.2"
   },
   "devDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",

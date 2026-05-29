@@ -22,7 +22,7 @@ There are **no tests and no linter** configured; `npm run typecheck` is the only
 
 - **One-command run:** `./start.sh` (or `npm run serve`), open http://localhost:4000.
 - **Hot-reload dev:** run `npm run server` *and* `npm run dev` in two terminals, open http://localhost:5173. Both are required — the Vite server only proxies `/api`, it does not serve data itself.
-- **No-clone run:** `npx github:Emilz4466/claude-usage-dashboard` fetches and runs it (`bin` → `server.js`). The built **`dist/` is committed to the repo** (not gitignored), so npx serves it directly with **no install-time build** — fast and resilient to `ignore-scripts` / build failures in the runner's env. ⚠️ Because the build is shipped, **run `npm run build` and commit `dist/` whenever the frontend changes**, or npx users get a stale UI. (There is intentionally no `prepare` hook — install never builds.)
+- **No-clone run:** published to npm as **`claude-code-usage-dashboard`** → `npx claude-code-usage-dashboard` (`bin` → `server.js`, which **must stay executable / mode 755**). The built **`dist/` is committed** (not gitignored) and `files` ships `server.js` + `dist`, so install does **no build** and the only runtime dep is `express` (react/recharts are devDeps — bundled into `dist` at build time). `prepublishOnly` rebuilds `dist/` before each publish. ⚠️ Also `npm run build` + commit `dist/` on frontend changes for git/local runs. **Do NOT use `npx github:…`** — it breaks on Debian/Ubuntu npm 9.x (git-dep handling: "could not determine executable to run"); the registry path avoids that.
 
 Env vars (read in `server.js`): `PORT` (4000), `SCAN_INTERVAL_MS` (8000), `CLAUDE_CONFIG_DIR` (`~/.claude`), `DASHBOARD_CONFIG` (`~/.claude-usage-dashboard.json`).
 
