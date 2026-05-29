@@ -22,7 +22,7 @@ There are **no tests and no linter** configured; `npm run typecheck` is the only
 
 - **One-command run:** `./start.sh` (or `npm run serve`), open http://localhost:4000.
 - **Hot-reload dev:** run `npm run server` *and* `npm run dev` in two terminals, open http://localhost:5173. Both are required — the Vite server only proxies `/api`, it does not serve data itself.
-- **No-clone run:** the package is `npx`-ready — `bin` → `server.js`, and the `prepare` script builds `dist/` on install, so `npx github:Emilz4466/claude-usage-dashboard` fetches, builds, and runs it. Note `prepare` also means a plain `npm install` rebuilds `dist/`.
+- **No-clone run:** `npx github:Emilz4466/claude-usage-dashboard` fetches and runs it (`bin` → `server.js`). The built **`dist/` is committed to the repo** (not gitignored), so npx serves it directly with **no install-time build** — fast and resilient to `ignore-scripts` / build failures in the runner's env. ⚠️ Because the build is shipped, **run `npm run build` and commit `dist/` whenever the frontend changes**, or npx users get a stale UI. (There is intentionally no `prepare` hook — install never builds.)
 
 Env vars (read in `server.js`): `PORT` (4000), `SCAN_INTERVAL_MS` (8000), `CLAUDE_CONFIG_DIR` (`~/.claude`), `DASHBOARD_CONFIG` (`~/.claude-usage-dashboard.json`).
 

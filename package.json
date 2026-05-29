@@ -19,8 +19,7 @@
     "build": "vite build",
     "serve": "npm run build && npm start",
     "start": "node server.js",
-    "typecheck": "tsc --noEmit",
-    "prepare": "npm run build"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "express": "^4.19.2",

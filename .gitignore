@@ -1,5 +1,4 @@
 node_modules
-dist
 dashboard-config.json
 account-map.json
 *.log
