@@ -3,12 +3,24 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "claude-usage-dashboard": "server.js"
+  },
+  "files": [
+    "server.js",
+    "dist"
+  ],
   "scripts": {
-    "server": "node server.js",
     "dev": "vite",
+    "server": "node server.js",
     "build": "vite build",
+    "serve": "npm run build && npm start",
+    "start": "node server.js",
     "typecheck": "tsc --noEmit",
-    "start": "node server.js"
+    "prepare": "npm run build"
   },
   "dependencies": {
     "express": "^4.19.2",

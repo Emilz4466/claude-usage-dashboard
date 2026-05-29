@@ -18,6 +18,7 @@
  *   PORT                (domyslnie 4000)
  *   SCAN_INTERVAL_MS    (domyslnie 8000)
  *   CLAUDE_CONFIG_DIR   (jesli logi sa poza ~/.claude)
+ *   DASHBOARD_CONFIG    (sciezka pliku z kalibracja/wykluczeniami; domyslnie ~/.claude-usage-dashboard.json)
  */
 
 import express from "express";
@@ -33,7 +34,7 @@ const PORT = Number(process.env.PORT || 4000);
 const SCAN_INTERVAL_MS = Number(process.env.SCAN_INTERVAL_MS || 8000);
 const BASE = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), ".claude");
 const PROJECTS_DIR = path.join(BASE, "projects");
-const CONFIG_FILE = path.join(__dirname, "dashboard-config.json");
+const CONFIG_FILE = process.env.DASHBOARD_CONFIG || path.join(os.homedir(), ".claude-usage-dashboard.json");
 const DIST = path.join(__dirname, "dist");
 
 const FIVE_H = 5 * 60 * 60 * 1000;
