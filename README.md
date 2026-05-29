@@ -95,14 +95,15 @@ surowych tokenów: waży je wewnętrznie (Opus „kosztuje" dużo więcej niż S
 output więcej niż input, cache-read jest groszowy) i pokazuje % limitu w oknach
 czasowych. Dlatego, żeby zbliżyć się do tej liczby z samego dysku, robimy trzy rzeczy:
 
-1. **Ważenie kosztem.** Każdy typ tokenu mnożymy przez cenę API danego modelu
-   (tabela `PRICING` w `server.js`). Dzięki temu proporcje między modelami zgadzają
-   się z ustawieniami — surowa suma tokenów zupełnie by tu kłamała.
+1. **Ważenie kosztem (wewnętrzne, niewidoczne).** Każdy typ tokenu mnożymy przez
+   wagę cenową danego modelu (tabela `PRICING` w `server.js`) — wyłącznie po to, by
+   **proporcje** między modelami zgadzały się z ustawieniami (surowa suma tokenów by
+   tu kłamała). Te wagi nie są nigdzie pokazywane jako kwoty — służą tylko do %.
 2. **Te same okna co ustawienia.** Kroczące **5 h** („sesja", w blokach startujących
    od pierwszej wiadomości, z czasem do resetu) oraz **ostatnie 7 dni** („tydzień").
 3. **Jednorazowa kalibracja.** Patrzysz w ustawienia (np. „tydzień: 47%"), klikasz
    **Kalibruj** przy danym wskaźniku i wpisujesz `47`. Backend wylicza limit wstecz
-   (`limit = koszt_w_oknie / (% / 100)`) i zapisuje go w `dashboard-config.json`.
+   (`limit = waga_w_oknie / (% / 100)`) i zapisuje go w `~/.claude-usage-dashboard.json`.
    Od tej chwili wskaźnik trzyma się blisko, bo używa tych samych okien i wag.
 
 > **Dokładność cen nie musi być idealna** — wspólny mnożnik skraca się przy
@@ -117,21 +118,23 @@ którego na dysku nie ma. To najbliższe możliwe z samego dysku.
 
 W tabeli **Projekty** każdy katalog roboczy ma przełącznik **Liczony / Pomijany**.
 Pomiń szum (np. sam ten dashboard, repo testowe), żeby nie zawyżał totali i nie
-psuł kalibracji. Wybór zapisuje się w `dashboard-config.json`.
+psuł kalibracji. Wybór zapisuje się w `~/.claude-usage-dashboard.json`.
 
 ## Co pokazuje
 
 - Dwa wskaźniki **% zużycia**: sesja (5 h, z czasem do resetu) i tydzień (7 dni).
-- Wykres tokenów w czasie z rozbiciem na input / output / cache read / cache write.
-- Strukturę tokenów w % oraz koszt-ekwiwalent wg modelu.
-- Tabelę projektów z sumami tokenów, kosztem i przełącznikiem liczenia.
-- Tabelę **sesji** (jak `/resume`) — tytuł, projekt, ile tokenów i kosztu „zjadła"
-  każda sesja; sortowanie po ostatniej aktywności lub po tokenach.
+- Wykres tokenów w czasie z **przełącznikiem okresu** (dzień / tydzień / miesiąc /
+  pół roku / rok / całość; ziarnistość dobierana automatycznie) i rozbiciem na
+  input / output / cache read / cache write.
+- Strukturę tokenów w % oraz **liczbę tokenów wg modelu** — dla wybranego okresu.
+- Tabelę projektów z sumami tokenów i przełącznikiem liczenia.
+- Tabelę **sesji** (jak `/resume`) — tytuł, projekt, ile tokenów „zjadła" każda
+  sesja; sortowanie po ostatniej aktywności lub po tokenach.
 
-Liczone są **tokeny** i ich **koszt-ekwiwalent** (wagi do %), nie faktyczna faktura —
-przy korzystaniu z Claude Code w ramach subskrypcji koszt nie jest naliczany per token.
-Zużycie czatu Claude.ai (Pro) **nie** jest tu uwzględnione — nie ma do niego lokalnych
-logów ani API.
+Liczone są **tokeny** (twarde dane z logów). Kwoty/ceny **nie są pokazywane** —
+ceny służą wyłącznie jako niewidoczne wagi do liczenia % (Opus „waży" więcej niż
+Sonnet). Zużycie czatu Claude.ai (Pro) **nie** jest uwzględnione — nie ma do niego
+lokalnych logów ani API.
 
 ## Zmienne środowiskowe
 
