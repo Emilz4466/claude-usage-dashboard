@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ProjectInfo } from "../types";
 import { setExcluded } from "../api";
-import { fmtInt, fmtUsd, relTime } from "../lib/format";
+import { fmtInt, relTime } from "../lib/format";
 
 interface Props {
   projects: ProjectInfo[];
@@ -33,7 +33,6 @@ export function ProjectTable({ projects, onChanged }: Props) {
             <tr>
               <th>Projekt</th>
               <th>Tokeny</th>
-              <th>Koszt~</th>
               <th>Wiad.</th>
               <th>Ostatnio</th>
               <th>Liczony</th>
@@ -42,7 +41,7 @@ export function ProjectTable({ projects, onChanged }: Props) {
           <tbody>
             {projects.length === 0 && (
               <tr>
-                <td colSpan={6} className="empty">
+                <td colSpan={5} className="empty">
                   Brak projektów — czy Claude Code zapisał już jakieś sesje?
                 </td>
               </tr>
@@ -53,7 +52,6 @@ export function ProjectTable({ projects, onChanged }: Props) {
                   {pr.displayPath}
                 </td>
                 <td className="num">{fmtInt(pr.total)}</td>
-                <td className="num">{fmtUsd(pr.cost)}</td>
                 <td className="num">{pr.messages}</td>
                 <td className="num muted">{relTime(pr.lastTs)}</td>
                 <td>

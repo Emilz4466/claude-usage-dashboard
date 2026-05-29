@@ -250,51 +250,90 @@ function computeWindows(now) {
   };
 }
 
-function buildSnapshot() {
+// ---- przedzialy czasowe widoku historycznego ----
+const DAY_MS = 24 * 60 * 60 * 1000;
+const PERIODS = {
+  day:      { since: DAY_MS,       gran: "hour" },
+  week:     { since: 7 * DAY_MS,   gran: "day" },
+  month:    { since: 30 * DAY_MS,  gran: "day" },
+  halfyear: { since: 182 * DAY_MS, gran: "week" },
+  year:     { since: 365 * DAY_MS, gran: "month" },
+  all:      { since: Infinity,     gran: "day" },
+};
+const pad2 = (n) => String(n).padStart(2, "0");
+// Klucz kubelka w czasie LOKALNYM (zgodnym z zegarem uzytkownika).
+function bucketKey(t, gran) {
+  const d = new Date(t);
+  const Y = d.getFullYear(), M = pad2(d.getMonth() + 1), D = pad2(d.getDate());
+  if (gran === "hour") return `${Y}-${M}-${D}T${pad2(d.getHours())}`;
+  if (gran === "month") return `${Y}-${M}`;
+  if (gran === "week") {
+    const off = (d.getDay() + 6) % 7; // dni od poniedzialku
+    const mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - off);
+    return `${mon.getFullYear()}-${pad2(mon.getMonth() + 1)}-${pad2(mon.getDate())}`;
+  }
+  return `${Y}-${M}-${D}`; // day
+}
+
+// periodKey skaluje WIDOK HISTORYCZNY (wykres, struktura, modele). Calosc/sesje/
+// projekty/okna % licza sie zawsze z pelnych danych.
+function buildSnapshot(periodKey) {
   const now = Date.now();
-  const totals = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0, cost: 0, messages: 0 };
-  const dayMap = new Map();
-  const modelMap = new Map();
-  const projAgg = new Map();
-  const sessAgg = new Map();
+  const period = PERIODS[periodKey] ? periodKey : "all";
+  const { since: span, gran } = PERIODS[period];
+  const cutoff = span === Infinity ? -Infinity : now - span;
+
+  const totals = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0, messages: 0 };        // calosc
+  const periodTotals = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0, messages: 0 };  // wybrany okres
+  const bucketMap = new Map();  // klucz czasu -> kubelek tokenow (wybrany okres)
+  const modelMap = new Map();   // model -> tokeny (wybrany okres)
+  const projAgg = new Map();    // calosc
+  const sessAgg = new Map();    // calosc
 
   for (const r of records.values()) {
     const tok = r.input + r.output + r.cacheRead + r.cacheWrite;
 
-    // per-projekt agregujemy zawsze (tabela pokazuje takze wykluczone)
-    const pa = projAgg.get(r.projectDir) || { messages: 0, total: 0, cost: 0, lastTs: null };
-    pa.messages++; pa.total += tok; pa.cost += r.cost;
+    // per-projekt: zawsze, z calosci (tabela pokazuje takze wykluczone)
+    const pa = projAgg.get(r.projectDir) || { messages: 0, total: 0, lastTs: null };
+    pa.messages++; pa.total += tok;
     if (!pa.lastTs || r.ts > pa.lastTs) pa.lastTs = r.ts;
     projAgg.set(r.projectDir, pa);
 
     if (excluded.has(r.projectDir)) continue; // wykluczone nie licza sie nigdzie indziej
 
     totals.input += r.input; totals.output += r.output; totals.cacheRead += r.cacheRead;
-    totals.cacheWrite += r.cacheWrite; totals.total += tok; totals.cost += r.cost; totals.messages++;
+    totals.cacheWrite += r.cacheWrite; totals.total += tok; totals.messages++;
 
-    const d = dayMap.get(r.day) || { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0 };
-    d.input += r.input; d.output += r.output; d.cacheRead += r.cacheRead; d.cacheWrite += r.cacheWrite; d.cost += r.cost;
-    dayMap.set(r.day, d);
-
-    const mm = modelMap.get(r.model) || { total: 0, cost: 0, messages: 0 };
-    mm.total += tok; mm.cost += r.cost; mm.messages++;
-    modelMap.set(r.model, mm);
-
-    const sa = sessAgg.get(r.sessionId) || { projectDir: r.projectDir, messages: 0, total: 0, cost: 0, firstTs: r.ts, lastTs: r.ts };
-    sa.messages++; sa.total += tok; sa.cost += r.cost;
+    const sa = sessAgg.get(r.sessionId) || { projectDir: r.projectDir, messages: 0, total: 0, firstTs: r.ts, lastTs: r.ts };
+    sa.messages++; sa.total += tok;
     if (r.ts < sa.firstTs) sa.firstTs = r.ts;
     if (r.ts > sa.lastTs) sa.lastTs = r.ts;
     sessAgg.set(r.sessionId, sa);
+
+    // wybrany okres: wykres + struktura + modele
+    const t = Date.parse(r.ts);
+    if (!Number.isNaN(t) && t >= cutoff) {
+      periodTotals.input += r.input; periodTotals.output += r.output; periodTotals.cacheRead += r.cacheRead;
+      periodTotals.cacheWrite += r.cacheWrite; periodTotals.total += tok; periodTotals.messages++;
+
+      const key = bucketKey(t, gran);
+      const b = bucketMap.get(key) || { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+      b.input += r.input; b.output += r.output; b.cacheRead += r.cacheRead; b.cacheWrite += r.cacheWrite;
+      bucketMap.set(key, b);
+
+      const mm = modelMap.get(r.model) || { total: 0, messages: 0 };
+      mm.total += tok; mm.messages++;
+      modelMap.set(r.model, mm);
+    }
   }
 
-  const series = [...dayMap.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([day, v]) => ({ day, ...v }));
-  const models = [...modelMap.entries()].map(([model, v]) => ({ model, ...v })).sort((a, b) => b.cost - a.cost);
+  const series = [...bucketMap.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([bucket, v]) => ({ bucket, ...v }));
+  const models = [...modelMap.entries()].map(([model, v]) => ({ model, ...v })).sort((a, b) => b.total - a.total);
   const projects = [...projAgg.entries()].map(([dir, agg]) => ({
     dir,
     displayPath: projectDisplay.get(dir) || decodeDir(dir),
     messages: agg.messages,
     total: agg.total,
-    cost: agg.cost,
     lastTs: agg.lastTs,
     excluded: excluded.has(dir),
   })).sort((a, b) => b.total - a.total);
@@ -306,18 +345,21 @@ function buildSnapshot() {
     title: sessionTitle(sessionMeta.get(id) || {}),
     messages: a.messages,
     total: a.total,
-    cost: a.cost,
     firstTs: a.firstTs,
     lastTs: a.lastTs,
   })).sort((a, b) => (a.lastTs < b.lastTs ? 1 : -1)); // najnowsze na gorze (jak /resume)
 
-  return { lastScan, scanError, claudeDir: PROJECTS_DIR, totals, series, models, windows: computeWindows(now), projects, sessions };
+  return {
+    lastScan, scanError, claudeDir: PROJECTS_DIR,
+    period, gran, totals, periodTotals, series, models,
+    windows: computeWindows(now), projects, sessions,
+  };
 }
 
 const app = express();
 app.use(express.json());
 
-app.get("/api/snapshot", (_req, res) => res.json(buildSnapshot()));
+app.get("/api/snapshot", (req, res) => res.json(buildSnapshot(req.query.period)));
 
 // wlacz/wyklucz projekt z liczenia
 app.post("/api/exclude", async (req, res) => {

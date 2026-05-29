@@ -9,7 +9,7 @@ import {
 } from "recharts";
 import type { Totals, ModelTotal } from "../types";
 import { usePalette } from "../theme/palette";
-import { fmtInt, fmtUsd } from "../lib/format";
+import { fmtInt, fmtCompact } from "../lib/format";
 
 interface Props {
   totals: Totals;
@@ -38,7 +38,7 @@ export function BreakdownPanel({ totals, models }: Props) {
   ];
   const barRow = [Object.fromEntries(parts.map((x) => [x.key, x.val]))];
 
-  const modelData = models.filter((m) => m.cost > 0).map((m) => ({ name: shortModel(m.model), cost: m.cost }));
+  const modelData = models.filter((m) => m.total > 0).map((m) => ({ name: shortModel(m.model), tokens: m.total }));
   const cycle = [p.cacheWrite, p.output, p.input, p.cacheRead];
 
   return (
@@ -46,10 +46,10 @@ export function BreakdownPanel({ totals, models }: Props) {
       <div className="panel">
         <div className="panel-head">
           <h2>Struktura tokenów</h2>
-          <span className="muted">udział typów w sumie</span>
+          <span className="muted">udział typów w sumie (okres)</span>
         </div>
         {sum === 0 ? (
-          <div className="empty">Brak danych.</div>
+          <div className="empty">Brak danych w tym okresie.</div>
         ) : (
           <>
             <div className="chart-box">
@@ -92,19 +92,19 @@ export function BreakdownPanel({ totals, models }: Props) {
 
       <div className="panel">
         <div className="panel-head">
-          <h2>Koszt wg modelu (~$)</h2>
-          <span className="muted">wagi do %</span>
+          <h2>Tokeny wg modelu</h2>
+          <span className="muted">wybrany okres</span>
         </div>
         {modelData.length === 0 ? (
-          <div className="empty">Brak danych.</div>
+          <div className="empty">Brak danych w tym okresie.</div>
         ) : (
           <div className="chart-box">
             <ResponsiveContainer width="100%" height={232}>
               <BarChart data={modelData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
                 <XAxis dataKey="name" stroke={p.axis} fontSize={11} />
-                <YAxis stroke={p.axis} fontSize={11} width={50} tickFormatter={(v) => "$" + fmtInt(Number(v))} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(value) => fmtUsd(Number(value))} />
-                <Bar dataKey="cost" name="Koszt~" radius={[4, 4, 0, 0]}>
+                <YAxis stroke={p.axis} fontSize={11} width={50} tickFormatter={fmtCompact} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value) => [fmtInt(Number(value)), "tokeny"]} />
+                <Bar dataKey="tokens" name="Tokeny" radius={[4, 4, 0, 0]}>
                   {modelData.map((d, i) => (
                     <Cell key={d.name} fill={cycle[i % cycle.length]} />
                   ))}

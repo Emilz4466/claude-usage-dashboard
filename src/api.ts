@@ -1,7 +1,7 @@
-import type { Snapshot, WindowKey } from "./types";
+import type { Snapshot, WindowKey, PeriodKey } from "./types";
 
-export async function fetchSnapshot(): Promise<Snapshot> {
-  const r = await fetch("/api/snapshot", { cache: "no-store" });
+export async function fetchSnapshot(period: PeriodKey = "all"): Promise<Snapshot> {
+  const r = await fetch("/api/snapshot?period=" + period, { cache: "no-store" });
   if (!r.ok) throw new Error("HTTP " + r.status);
   return r.json();
 }

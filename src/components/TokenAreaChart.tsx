@@ -8,35 +8,41 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import type { DayPoint, Totals } from "../types";
+import type { BucketPoint, Totals, PeriodKey, Gran } from "../types";
 import { usePalette } from "../theme/palette";
-import { fmtCompact, fmtInt } from "../lib/format";
+import { fmtCompact, fmtInt, bucketLabel } from "../lib/format";
+import { PeriodSelector } from "./PeriodSelector";
 
 interface Props {
-  data: DayPoint[];
-  totals?: Totals;
+  data: BucketPoint[];
+  gran: Gran;
+  periodTotals?: Totals;
+  period: PeriodKey;
+  onPeriodChange: (p: PeriodKey) => void;
 }
 
-export function TokenAreaChart({ data, totals }: Props) {
+export function TokenAreaChart({ data, gran, periodTotals, period, onPeriodChange }: Props) {
   const p = usePalette();
+  const label = (b: unknown) => bucketLabel(String(b), gran);
 
   return (
     <div className="panel">
       <div className="panel-head">
         <h2>Tokeny w czasie</h2>
-        <span className="muted">
-          {totals ? `${fmtInt(totals.total)} tok · ${totals.messages} wiad.` : "brak danych"}
-        </span>
+        <PeriodSelector value={period} onChange={onPeriodChange} />
+      </div>
+      <div className="sub-line muted">
+        {periodTotals ? `${fmtInt(periodTotals.total)} tok · ${periodTotals.messages} wiad. w wybranym okresie` : "—"}
       </div>
 
       {data.length === 0 ? (
-        <div className="empty">Brak danych — czy Claude Code zapisał już jakieś sesje?</div>
+        <div className="empty">Brak danych w tym okresie.</div>
       ) : (
         <div className="chart-box">
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={data} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid stroke={p.grid} vertical={false} />
-              <XAxis dataKey="day" stroke={p.axis} fontSize={11} tickMargin={8} minTickGap={28} />
+              <XAxis dataKey="bucket" stroke={p.axis} fontSize={11} tickMargin={8} minTickGap={28} tickFormatter={label} />
               <YAxis stroke={p.axis} fontSize={11} width={50} tickFormatter={fmtCompact} />
               <Tooltip
                 contentStyle={{
@@ -46,6 +52,7 @@ export function TokenAreaChart({ data, totals }: Props) {
                   color: "var(--text)",
                   fontSize: 12,
                 }}
+                labelFormatter={label}
                 formatter={(value) => fmtInt(Number(value))}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />

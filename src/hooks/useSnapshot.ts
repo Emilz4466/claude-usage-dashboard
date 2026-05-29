@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchSnapshot } from "../api";
-import type { Snapshot } from "../types";
+import type { Snapshot, PeriodKey } from "../types";
 
-export function useSnapshot(intervalMs = 5000) {
+export function useSnapshot(period: PeriodKey = "all", intervalMs = 5000) {
   const [data, setData] = useState<Snapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
-      const snap = await fetchSnapshot();
+      const snap = await fetchSnapshot(period);
       setData(snap);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, []);
+  }, [period]);
 
   useEffect(() => {
     refresh();

@@ -1,4 +1,6 @@
 export type WindowKey = "session" | "weekly";
+export type PeriodKey = "day" | "week" | "month" | "halfyear" | "year" | "all";
+export type Gran = "hour" | "day" | "week" | "month";
 
 export interface TokenBucket {
   input: number;
@@ -7,26 +9,22 @@ export interface TokenBucket {
   cacheWrite: number;
 }
 
-export interface DayPoint extends TokenBucket {
-  day: string;
-  cost: number;
+export interface BucketPoint extends TokenBucket {
+  bucket: string;
 }
 
 export interface Totals extends TokenBucket {
   total: number;
-  cost: number;
   messages: number;
 }
 
 export interface ModelTotal {
   model: string;
   total: number;
-  cost: number;
   messages: number;
 }
 
 export interface WindowUsage {
-  cost: number;
   messages: number;
   limit: number | null;
   percent: number | null;
@@ -43,7 +41,6 @@ export interface ProjectInfo {
   displayPath: string;
   messages: number;
   total: number;
-  cost: number;
   lastTs: string | null;
   excluded: boolean;
 }
@@ -55,7 +52,6 @@ export interface SessionInfo {
   title: string;
   messages: number;
   total: number;
-  cost: number;
   firstTs: string;
   lastTs: string;
 }
@@ -64,8 +60,11 @@ export interface Snapshot {
   lastScan: string | null;
   scanError: string | null;
   claudeDir: string;
+  period: PeriodKey;
+  gran: Gran;
   totals: Totals;
-  series: DayPoint[];
+  periodTotals: Totals;
+  series: BucketPoint[];
   models: ModelTotal[];
   windows: Record<WindowKey, WindowUsage>;
   projects: ProjectInfo[];

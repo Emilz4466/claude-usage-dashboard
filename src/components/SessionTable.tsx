@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { SessionInfo } from "../types";
-import { fmtInt, fmtUsd, relTime } from "../lib/format";
+import { fmtInt, relTime } from "../lib/format";
 
 interface Props {
   sessions: SessionInfo[];
@@ -40,7 +40,6 @@ export function SessionTable({ sessions }: Props) {
               <th>Sesja</th>
               <th>Projekt</th>
               <th>Tokeny</th>
-              <th>Koszt~</th>
               <th>Wiad.</th>
               <th>Ostatnio</th>
             </tr>
@@ -48,7 +47,7 @@ export function SessionTable({ sessions }: Props) {
           <tbody>
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={6} className="empty">
+                <td colSpan={5} className="empty">
                   Brak sesji z tokenami.
                 </td>
               </tr>
@@ -62,7 +61,6 @@ export function SessionTable({ sessions }: Props) {
                   {baseName(s.displayPath)}
                 </td>
                 <td className="num">{fmtInt(s.total)}</td>
-                <td className="num">{fmtUsd(s.cost)}</td>
                 <td className="num">{s.messages}</td>
                 <td className="num muted">{relTime(s.lastTs)}</td>
               </tr>

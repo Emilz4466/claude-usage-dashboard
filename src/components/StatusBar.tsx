@@ -1,5 +1,5 @@
 import type { Snapshot } from "../types";
-import { fmtInt, fmtUsd, relTime } from "../lib/format";
+import { fmtInt, relTime } from "../lib/format";
 
 interface Props {
   data: Snapshot | null;
@@ -26,10 +26,6 @@ export function StatusBar({ data, error }: Props) {
       <div className="stat">
         <span className="muted">Łącznie tokenów</span>
         <strong>{fmtInt(data?.totals.total ?? 0)}</strong>
-      </div>
-      <div className="stat">
-        <span className="muted">Koszt~ (ekwiwalent API)</span>
-        <strong>{fmtUsd(data?.totals.cost ?? 0)}</strong>
       </div>
       {data?.claudeDir && <div className="path">{data.claudeDir}</div>}
       {(error || data?.scanError) && <div className="banner">⚠ {error || data?.scanError}</div>}

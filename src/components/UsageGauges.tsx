@@ -3,7 +3,7 @@ import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from "
 import type { WindowUsage, WindowKey } from "../types";
 import { usePalette, levelColor } from "../theme/palette";
 import { calibrate } from "../api";
-import { fmtUsd, fmtPct, countdown, relTime } from "../lib/format";
+import { fmtPct, countdown, relTime } from "../lib/format";
 
 interface Props {
   windows: Record<WindowKey, WindowUsage>;
@@ -88,15 +88,11 @@ function GaugeCard({
           </ResponsiveContainer>
           <div className="gauge-center">
             <strong style={{ color }}>{fmtPct(pct)}</strong>
-            {win.limit != null && <span className="muted">limit {fmtUsd(win.limit)}</span>}
+            {win.limit != null && <span className="muted">skalibrowane</span>}
           </div>
         </div>
 
         <div className="gauge-meta">
-          <div className="kv">
-            <span className="muted">koszt~</span>
-            <strong>{fmtUsd(win.cost)}</strong>
-          </div>
           <div className="kv">
             <span className="muted">wiadomości</span>
             <strong>{win.messages}</strong>

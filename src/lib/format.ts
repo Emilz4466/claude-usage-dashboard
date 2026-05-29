@@ -4,11 +4,15 @@ export const fmtInt = (n: number): string =>
 export const fmtCompact = (n: number): string =>
   new Intl.NumberFormat("pl-PL", { notation: "compact", maximumFractionDigits: 1 }).format(n || 0);
 
-export const fmtUsd = (n: number): string =>
-  new Intl.NumberFormat("pl-PL", { style: "currency", currency: "USD", maximumFractionDigits: (n || 0) < 10 ? 2 : 0 }).format(n || 0);
-
 export const fmtPct = (n: number | null | undefined): string =>
   n == null || Number.isNaN(n) ? "—" : `${n.toFixed(n < 10 ? 1 : 0)}%`;
+
+/** Etykieta osi czasu wykresu wg ziarnistosci kubelka. */
+export function bucketLabel(bucket: string, gran: string): string {
+  if (gran === "hour") return bucket.slice(11) + ":00"; // "2026-05-29T14" -> "14:00"
+  if (gran === "month") return bucket; // "2026-05"
+  return bucket.slice(5); // day/week: "MM-DD"
+}
 
 /** Odliczanie do momentu w przyszlosci, np. "2 h 13 min" / "8 min" / "teraz". */
 export function countdown(iso: string | null | undefined): string {

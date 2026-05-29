@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useSnapshot } from "./hooks/useSnapshot";
 import { ThemeSwitcher } from "./components/ThemeSwitcher";
 import { StatusBar } from "./components/StatusBar";
@@ -7,13 +8,14 @@ import { BreakdownPanel } from "./components/BreakdownPanel";
 import { ProjectTable } from "./components/ProjectTable";
 import { SessionTable } from "./components/SessionTable";
 import { fmtInt } from "./lib/format";
+import type { PeriodKey, WindowUsage } from "./types";
 
-const EMPTY_WINDOW = { cost: 0, messages: 0, limit: null, percent: null };
+const EMPTY_WINDOW: WindowUsage = { messages: 0, limit: null, percent: null };
 
 export default function App() {
-  const { data, error, refresh } = useSnapshot(5000);
+  const [period, setPeriod] = useState<PeriodKey>("all");
+  const { data, error, refresh } = useSnapshot(period, 5000);
 
-  const totals = data?.totals;
   const windows = data?.windows ?? { session: EMPTY_WINDOW, weekly: EMPTY_WINDOW };
 
   return (
@@ -33,16 +35,22 @@ export default function App() {
 
       <UsageGauges windows={windows} onChanged={refresh} />
 
-      <TokenAreaChart data={data?.series ?? []} totals={totals} />
+      <TokenAreaChart
+        data={data?.series ?? []}
+        gran={data?.gran ?? "day"}
+        periodTotals={data?.periodTotals}
+        period={period}
+        onPeriodChange={setPeriod}
+      />
 
-      {totals && <BreakdownPanel totals={totals} models={data?.models ?? []} />}
+      {data?.periodTotals && <BreakdownPanel totals={data.periodTotals} models={data?.models ?? []} />}
 
       <ProjectTable projects={data?.projects ?? []} onChanged={refresh} />
 
       <SessionTable sessions={data?.sessions ?? []} />
 
       <footer className="foot">
-        Odświeżanie co 5 s · źródło: lokalne logi Claude Code · łącznie {fmtInt(totals?.total ?? 0)} tokenów ·
+        Odświeżanie co 5 s · źródło: lokalne logi Claude Code · łącznie {fmtInt(data?.totals.total ?? 0)} tokenów ·
         % liczony względem skalibrowanego limitu (logi nie zawierają limitu planu)
       </footer>
     </div>
