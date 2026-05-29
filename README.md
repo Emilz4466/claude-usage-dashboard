@@ -29,15 +29,34 @@ Przeglądarka nie czyta plików z dysku, więc aplikacja ma dwie części:
 - Node.js 18+ (testowane na 22)
 - Używasz Claude Code (logi w `~/.claude/projects`)
 
-## Uruchomienie (najprościej)
+## Uruchomienie (jedną komendą)
 
 ```bash
-npm install
-npm run build      # buduje frontend do dist/
-npm start          # backend serwuje dist + API
+./start.sh          # zainstaluje (jeśli trzeba), zbuduje frontend i uruchomi serwer
 ```
 
-Otwórz **http://localhost:4000**.
+…albo równoważnie przez npm:
+
+```bash
+npm install         # tylko za pierwszym razem
+npm run serve       # = npm run build && npm start
+```
+
+Otwórz **http://localhost:4000**. (Port zmienisz przez `PORT=5000 ./start.sh`.)
+
+## Uruchomienie bez klonowania (npx)
+
+Jeśli repo jest na Git (np. GitHub), uruchomisz je bez ręcznego klonowania —
+`npx` pobierze kod, sam zbuduje frontend (hook `prepare`) i wystartuje serwer:
+
+```bash
+npx github:Emilz4466/claude-usage-dashboard
+```
+
+Kalibracja i wykluczenia zapisują się w `~/.claude-usage-dashboard.json`, więc
+przeżywają kolejne uruchomienia (także przez `npx`, który działa w katalogu
+tymczasowym). Logi czytane są z `~/.claude` na **tej** maszynie — aplikacja musi
+działać lokalnie, na koncie którego zużycie chcesz widzieć.
 
 ## Tryb developerski (hot reload)
 
@@ -103,6 +122,7 @@ logów ani API.
 | `PORT` | `4000` | port backendu |
 | `SCAN_INTERVAL_MS` | `8000` | jak często skanować logi |
 | `CLAUDE_CONFIG_DIR` | `~/.claude` | katalog danych Claude Code |
+| `DASHBOARD_CONFIG` | `~/.claude-usage-dashboard.json` | plik z kalibracją i wykluczeniami |
 
 ## Struktura
 

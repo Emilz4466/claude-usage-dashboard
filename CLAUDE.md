@@ -9,7 +9,8 @@ Local dashboard ("Claude Token Monitor") for tracking Claude Code token usage on
 ## Commands
 
 ```bash
-npm install
+./start.sh         # one-shot: install-if-needed + build + run (bootstrap script)
+npm run serve      # = npm run build && npm start (assumes deps installed)
 npm run build      # Vite build -> dist/
 npm start          # = node server.js; serves dist/ + API on :4000
 npm run server     # backend only (same entrypoint as start)
@@ -19,10 +20,11 @@ npm run typecheck  # tsc --noEmit — the ONLY static check available
 
 There are **no tests and no linter** configured; `npm run typecheck` is the only check. Always run it after frontend changes.
 
-- **Production-like run:** `npm run build` then `npm start`, open http://localhost:4000.
+- **One-command run:** `./start.sh` (or `npm run serve`), open http://localhost:4000.
 - **Hot-reload dev:** run `npm run server` *and* `npm run dev` in two terminals, open http://localhost:5173. Both are required — the Vite server only proxies `/api`, it does not serve data itself.
+- **No-clone run:** the package is `npx`-ready — `bin` → `server.js`, and the `prepare` script builds `dist/` on install, so `npx github:Emilz4466/claude-usage-dashboard` fetches, builds, and runs it. Note `prepare` also means a plain `npm install` rebuilds `dist/`.
 
-Env vars (read in `server.js`): `PORT` (4000), `SCAN_INTERVAL_MS` (8000), `CLAUDE_CONFIG_DIR` (`~/.claude`).
+Env vars (read in `server.js`): `PORT` (4000), `SCAN_INTERVAL_MS` (8000), `CLAUDE_CONFIG_DIR` (`~/.claude`), `DASHBOARD_CONFIG` (`~/.claude-usage-dashboard.json`).
 
 ## Architecture
 
@@ -52,7 +54,7 @@ There is **no plan limit / quota / max-token value anywhere in the logs** — it
 
 ### Persistence
 
-Mutable state (project exclusions + calibrated limits) lives in **`dashboard-config.json`** (gitignored): `{ excluded: string[], sessionLimit: number|null, weeklyLimit: number|null }`. Loaded at startup into the `excluded` Set and `config`; written by `saveConfig()`. (The old `account-map.json` from the pre-split design is obsolete.)
+Mutable state (project exclusions + calibrated limits) lives in **`$DASHBOARD_CONFIG`** (default `~/.claude-usage-dashboard.json`, in the home dir — **not** under the repo, so it survives `npx`/temp-dir runs): `{ excluded: string[], sessionLimit: number|null, weeklyLimit: number|null }`. Loaded at startup into the `excluded` Set and `config`; written by `saveConfig()`. (The old repo-local `dashboard-config.json` / `account-map.json` are obsolete but still gitignored as a safety net.)
 
 ### Project dir encoding
 
